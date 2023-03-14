@@ -79,7 +79,7 @@ class spatial_attention(nn.Module):
             else:
                 self.key_rel_diagonal = nn.Parameter(torch.randn((1, self.dk // self.Nh), requires_grad=True))
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         # Input x
         # (batch_size, channels, 1, joints)
         B, _, T, V = x.size()

@@ -79,7 +79,7 @@ class unit_agcn(nn.Module):
         for i in range(self.num_subset):
             conv_branch_init(self.conv_d[i], self.num_subset)
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         N, C, T, V = x.size()
         A = self.A.cuda(x.get_device())
         A = A + self.PA

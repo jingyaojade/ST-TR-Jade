@@ -35,7 +35,7 @@ import os
 
 incidence = np.array([])
 
-name_exp = 'prova20'
+name_exp = 'Spatial transformer stream'
 writer = SummaryWriter('./' + name_exp)
 use_gpu = True
 device = torch.device("cuda:0" if torch.cuda.is_available() and use_gpu else "cpu")
@@ -77,7 +77,7 @@ def get_parser():
         help='the work folder for storing results')
     parser.add_argument(
         '--config',
-        default='./train.yaml',
+        default='./qualisys_train.yaml',
         help='path to the configuration file')
 
     # processor
@@ -323,10 +323,10 @@ class Processor():
         self.model = Model(**self.arg.model_args, device=self.output_device).cuda(output_device)
         self.loss = nn.CrossEntropyLoss().to(output_device)
 
-        # 用预训练模型
-        path = "../checkpoints/ntu60_xsub_bones_spatial.pt"
-        checkpoint = torch.load(path) #, map_location = self.output_device
-        self.model.load_state_dict(checkpoint)
+        # 用预训练模型(only for ntu)
+        # path = "../checkpoints/ntu60_xsub_bones_spatial.pt"
+        # checkpoint = torch.load(path) #, map_location = self.output_device
+        # self.model.load_state_dict(checkpoint)
 
         if self.arg.weights:
             self.print_log('Load weights from {}.'.format(self.arg.weights))
@@ -528,7 +528,7 @@ class Processor():
             running_optimize_every = min(arg.optimize_every, tot_num_batches - running_batches)
             self.optimizer.zero_grad()
 
-            for batch_idx, (data, label, name) in enumerate(loader):
+            for batch_idx, (data, label) in enumerate(loader):  # name
 
                 data = Variable(
                     data.float().cuda(self.output_device), requires_grad=False)
@@ -539,7 +539,7 @@ class Processor():
 
                 # forward
 
-                output = self.model(data, label, name)
+                output = self.model(data, label)  # name
                 loss = self.loss(output, label)
                 loss_norm = loss / running_optimize_every
 
@@ -663,7 +663,7 @@ class Processor():
         for ln in loader_name:
             loss_value = []
             score_frag = []
-            for batch_idx, (data, label, name) in enumerate(self.data_loader[ln]):
+            for batch_idx, (data, label) in enumerate(self.data_loader[ln]):
                 with torch.no_grad():
                     data = Variable(
                         data.float().cuda(self.output_device),
@@ -671,8 +671,8 @@ class Processor():
                     label = Variable(
                         label.long().cuda(self.output_device),
                         requires_grad=False)
-                name = name[0]
-                output = self.model(data, label, name)
+                # name = name[0]
+                output = self.model(data, label)
                 loss = self.loss(output, label)
                 score_frag.append(output.data.cpu().numpy())
                 loss_value.append(loss.data.item())
@@ -782,7 +782,7 @@ class Processor():
         for ln in loader_name:
             loss_value = []
             score_frag = []
-            for batch_idx, (data, label, name) in enumerate(self.data_loader[ln]):
+            for batch_idx, (data, label) in enumerate(self.data_loader[ln]):
                 with torch.no_grad():
                     data = Variable(
                         data.float().cuda(self.output_device),
@@ -791,7 +791,7 @@ class Processor():
                         label.long().cuda(self.output_device),
                         requires_grad=False)
 
-                output = self.model(data, label, name)
+                output = self.model(data, label)
                 loss = self.loss(output, label)
                 score_frag.append(output.data.cpu().numpy())
                 loss_value.append(loss.data.item())
@@ -909,17 +909,17 @@ class Processor():
                 else:
                     self.print_log('Can Not Remove Weights: {}.'.format(w))
 
-            try:
-
-                self.model.load_state_dict(weights)
-            except:
-                state = self.model.state_dict()
-                diff = list(set(state.keys()).difference(set(weights.keys())))
-                print('Can not find these weights:')
-                for d in diff:
-                    print('  ' + d)
-                state.update(weights)
-                self.model.load_state_dict(state)
+            # try:
+            #
+                # self.model.load_state_dict(weights)
+            # except:
+            state = self.model.state_dict()
+            diff = list(set(state.keys()).difference(set(weights.keys())))
+            print('Can not find these weights:')
+            for d in diff:
+                print('  ' + d)
+            state.update(weights)
+            # self.model.load_state_dict(state)  # 不用预训练模型，没有checkpoint
             self.test(
                 epoch=0, save_score=self.arg.save_score, loader_name=['test'])
             self.print_log('Done.\n')

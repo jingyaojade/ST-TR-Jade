@@ -250,7 +250,7 @@ class Model(nn.Module):
         self.fcn = nn.Conv1d(backbone_out_c, num_class, kernel_size=1)
         conv_init(self.fcn)
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         N, C, T, V, M = x.size()
         # print(x.shape)
         if (self.concat_original):
@@ -273,14 +273,14 @@ class Model(nn.Module):
 
         # model
         if not self.all_layers:
-            x = self.gcn0(x, label, name)
+            x = self.gcn0(x, label)
             x = self.tcn0(x)
 
         for i, m in enumerate(self.backbone):
             if i == 3 and self.concat_original:
-                x = m(torch.cat((x, x_coord), dim=1), label, name)
+                x = m(torch.cat((x, x_coord), dim=1), label)
             else:
-                x = m(x, label, name)
+                x = m(x, label)
 
         # V pooling
         x = F.avg_pool2d(x, kernel_size=(1, V))
@@ -429,9 +429,9 @@ class TCN_GCN_unit(nn.Module):
         else:
             self.down1 = None
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         # N, C, T, V = x.size()
-        x = self.tcn1(self.gcn1(x, label, name)) + (x if
+        x = self.tcn1(self.gcn1(x, label)) + (x if
                                                     (self.down1 is None) else self.down1(x))
 
         return x

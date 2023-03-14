@@ -65,7 +65,7 @@ class unit_gcn(nn.Module):
         for conv in self.conv_list:
             conv_init(conv)
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         N, C, T, V = x.size()
         self.A = self.A.cuda(x.get_device())
         A = self.A

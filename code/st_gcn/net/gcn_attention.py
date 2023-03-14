@@ -87,7 +87,7 @@ class gcn_unit_attention(nn.Module):
                                                 adjacency=self.adjacency, visualization=self.visualization, num_point=self.num_point)
 
 
-    def forward(self, x, label, name):
+    def forward(self, x, label):
         # N: number of samples, equal to the batch size
         # C: number of channels, in our case 3 (coordinates x, y, z)
         # T: number of frames
@@ -114,7 +114,7 @@ class gcn_unit_attention(nn.Module):
             xa = self.scale(xa)
 
         # Spatial Transformer
-        attn_out = self.attention_conv(xa, label, name)
+        attn_out = self.attention_conv(xa, label)
         # N, T, C, V > N, C, T, V
         attn_out = attn_out.reshape(N, T, -1, V).permute(0, 2, 1, 3)
 
