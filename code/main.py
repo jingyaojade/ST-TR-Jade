@@ -237,7 +237,7 @@ class Processor():
         self.best_accuracy = 0
         self.params = arg
         self.graph = nx.Graph()
-        self.num_joints = 25
+        self.num_joints = 15
         self.best_epoch = 0
 
     def save_checkpoint(self, path, filename, epoch):
@@ -575,7 +575,6 @@ class Processor():
                     # Step
                     self.optimizer.step()
                     loss_value.append(loss.data.item())
-
                     step = epoch * (len(loader) / (arg.optimize_every)) + real_batch_index
 
                     for name, param in self.model.named_parameters():
